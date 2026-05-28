@@ -1,4 +1,4 @@
-# Customer Data Quality Audit — dirty_customers
+# Customer Data Quality Audit
 
 This project is a data quality assessment built around a small mock dataset based on MySQL's Sakila database. I took the `customer` table, intentionally introduced common data errors, and renamed it `dirty_customers`;
 the idea being to simulate what you'd actually encounter when a new file or data source lands on your desk before it's been validated.
