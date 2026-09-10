@@ -165,7 +165,7 @@ WHERE email IS NOT NULL
 GROUP BY email
 HAVING COUNT(*) > 1
 ORDER BY cnt DESC;
--- Result: 40 records flagged across duplicate email groups
+-- Result: 39 records flagged across duplicate email groups
 
 -- 3E. Duplicate phone numbers
 --     Same logic as email — same phone on multiple records needs investigation.
@@ -195,14 +195,22 @@ ORDER BY cnt DESC;
 -- A bad zip means a shipping or geo-lookup fails silently.
 -- ============================================================
 
--- 4A. Invalid email format — missing @ symbol or domain
---     This catches obvious junk values like 'plaintext' or 'notanemail'.
---     Note: this is a basic check. A full regex would catch more edge cases.
+-- 4A. Invalid email format — structural validation via regex
+--     An earlier version of this check used a loose LIKE pattern
+--     ('%@%.%') that only caught junk values with no @ or no dot
+--     anywhere (like 'plaintext' or 'notanemail'). That pattern
+--     technically "passes" malformed emails such as '@nodomain.com',
+--     'double@@gmail.com', or 'missing@' because they still contain
+--     an @ and a dot somewhere in the string. This regex checks
+--     structure instead: no spaces, exactly one @, a non-empty
+--     local part before it, and a non-empty domain with a dot after it.
 SELECT customer_id, email
 FROM dirty_customers
 WHERE email IS NOT NULL
-  AND email NOT LIKE '%@%.%';
--- Result: 2 records (customer_id 282: 'plaintext', customer_id 481: 'notanemail')
+  AND email NOT REGEXP '^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$';
+-- Result: 8 records (customer_id 47: 'spaces in@email.com', 65: '@nodomain.com',
+-- 89: 'double@@gmail.com', 105: 'missing@', 282: 'plaintext', 304: 'nodot@com',
+-- 426: '@.com', 481: 'notanemail')
 
 -- 4B. Invalid zip code — must be exactly 5 numeric digits
 --     Anything outside that pattern (letters, dashes, 4 or 6 digits)
@@ -374,7 +382,7 @@ SELECT 'Duplicate phone',             COUNT(*) FROM dirty_customers WHERE phone 
 UNION ALL
 SELECT 'Full duplicate rows',         COUNT(*) FROM (SELECT first_name, last_name, email, phone, address, COUNT(*) FROM dirty_customers GROUP BY first_name, last_name, email, phone, address HAVING COUNT(*) > 1) sub
 UNION ALL
-SELECT 'Invalid email format',        COUNT(*) FROM dirty_customers WHERE email IS NOT NULL AND email NOT LIKE '%@%.%'
+SELECT 'Invalid email format',        COUNT(*) FROM dirty_customers WHERE email IS NOT NULL AND email NOT REGEXP '^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$'
 UNION ALL
 SELECT 'Invalid zip format',          COUNT(*) FROM dirty_customers WHERE zip NOT REGEXP '^[0-9]{5}$'
 UNION ALL
@@ -398,3 +406,5 @@ SELECT 'Invalid active flag',         COUNT(*) FROM dirty_customers WHERE active
 UNION ALL
 SELECT 'Negative customer_id',        COUNT(*) FROM dirty_customers WHERE customer_id < 0
 ORDER BY cnt DESC;
+
+use bad_sakila

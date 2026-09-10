@@ -1,7 +1,6 @@
-# Customer Data Quality Audit
+# Customer Data Quality Audit — dirty_customers
 
-This project is a data quality assessment built around a small mock dataset based on MySQL's Sakila database. I took the `customer` table, intentionally introduced common data errors, and renamed it `dirty_customers`;
-the idea being to simulate what you'd actually encounter when a new file or data source lands on your desk before it's been validated.
+This project is a data quality assessment built around a small mock dataset based on MySQL's Sakila database. I took the `customer` table, intentionally introduced common data errors, and renamed it `dirty_customers` — the idea being to simulate what you'd actually encounter when a new file or data source lands on your desk before it's been validated.
 
 The goal here isn't just to write queries. It's to show the full workflow: profile the data, find the problems, document what you found, fix what you can, and hand off the rest in a format that makes sense to whoever's reading it.
 
@@ -29,7 +28,7 @@ This is how I approach data quality in a real environment.
 | Category | Issue | Count |
 |---|---|---|
 | Duplicates | Full duplicate rows | 14 |
-| Duplicates | Duplicate email addresses | 40 |
+| Duplicates | Duplicate email addresses | 39 |
 | Duplicates | Duplicate phone numbers | 18 |
 | Nulls | NULL email | 10 |
 | Nulls | NULL first_name | 8 |
@@ -38,7 +37,7 @@ This is how I approach data quality in a real environment.
 | Format | Invalid zip code | 5 |
 | Dates | Future create_date | 5 |
 | Case | Mixed case first_name | 12 |
-| Format | Invalid email format | 2 |
+| Format | Invalid email format | 8 |
 | Other | Inactive records | 150 |
 
 ---
